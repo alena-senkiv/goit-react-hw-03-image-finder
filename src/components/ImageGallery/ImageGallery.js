@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import pixabayAPI from 'services/pixabay-api';
 import ImageGalleryItem from './ImageGalleryItem';
 import Loader from 'components/Loader';
@@ -8,12 +9,16 @@ import Modal from 'components/Modal';
 import s from './ImageGallery.module.css';
 
 export default class ImageGallery extends Component {
+  static propTypes = {
+    searchQuery: PropTypes.string,
+  };
+
   state = {
     images: [],
     page: 1,
     error: null,
     showModal: false,
-    modalProps: { url: '', alt: '' },
+    modalImgProps: { url: '', alt: '' },
     status: 'idle',
   };
 
@@ -75,12 +80,13 @@ export default class ImageGallery extends Component {
   };
 
   handleImgClick = props => {
-    this.setState({ modalProps: props });
+    this.setState({ modalImgProps: props });
     this.toggleModal();
   };
 
   render() {
-    const { images, error, status, showModal, modalProps } = this.state;
+    const { images, error, status, showModal } = this.state;
+    const { url, alt } = this.state.modalImgProps;
 
     if (status === 'idle') {
       return <div></div>;
@@ -98,18 +104,13 @@ export default class ImageGallery extends Component {
         <>
           {showModal && (
             <Modal onClose={this.toggleModal}>
-              <img
-                src={modalProps.url}
-                alt={modalProps.alt}
-                className={s.modalImg}
-              />
+              <img src={url} alt={alt} className={s.modalImg} />
             </Modal>
           )}
-          <ul className={s.ImageGallery}>
+          <ul className={s.imageGallery}>
             {images.map(({ id, webformatURL, tags, largeImageURL }) => (
               <ImageGalleryItem
                 key={id}
-                id={id}
                 src={webformatURL}
                 url={largeImageURL}
                 alt={tags}

@@ -4,6 +4,8 @@
 :root {
   --color-primary: cadetblue;
   --color-secondary: rgb(5, 86, 88);
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 body {
