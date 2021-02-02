@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import pixabayAPI from 'services/pixabay-api';
 import ImageGalleryItem from './ImageGalleryItem';
 import Loader from 'components/Loader';
 import ErrorSearch from 'components/ErrorSearch';
 import LoadMoreBtn from 'components/LoadMoreBtn';
-import pixabayAPI from 'services/pixabay-api';
+import Modal from 'components/Modal';
 import s from './ImageGallery.module.css';
 
 export default class ImageGallery extends Component {
@@ -12,15 +13,16 @@ export default class ImageGallery extends Component {
     page: 1,
     error: null,
     showModal: false,
+    modalProps: { url: '', alt: '' },
     status: 'idle',
   };
 
-  componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps) {
     const prevQuery = prevProps.searchQuery;
     const nextQuery = this.props.searchQuery;
 
     if (prevQuery !== nextQuery) {
-      this.reset();
+      await this.reset();
       this.setState({ status: 'pending' });
       this.fetchImages(nextQuery);
     }
@@ -40,10 +42,7 @@ export default class ImageGallery extends Component {
           status: 'resolved',
         }));
       })
-      .catch(error => this.setState({ error, status: 'rejected' }))
-      .finally(() => {
-        this.incrementPage();
-      });
+      .catch(error => this.setState({ error, status: 'rejected' }));
   };
 
   incrementPage = () => {
@@ -55,20 +54,33 @@ export default class ImageGallery extends Component {
   };
 
   scrollDown = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        left: 0,
+        behavior: 'smooth',
+      });
+    }, 1000);
   };
 
-  handleLoadBtnClick = () => {
+  handleLoadBtnClick = async () => {
     const nextQuery = this.props.searchQuery;
+    await this.incrementPage();
     this.fetchImages(nextQuery);
     this.scrollDown();
   };
 
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
+  handleImgClick = props => {
+    this.setState({ modalProps: props });
+    this.toggleModal();
+  };
+
   render() {
-    const { images, error, status } = this.state;
+    const { images, error, status, showModal, modalProps } = this.state;
 
     if (status === 'idle') {
       return <div></div>;
@@ -84,13 +96,24 @@ export default class ImageGallery extends Component {
     if (status === 'resolved') {
       return (
         <>
+          {showModal && (
+            <Modal onClose={this.toggleModal}>
+              <img
+                src={modalProps.url}
+                alt={modalProps.alt}
+                className={s.modalImg}
+              />
+            </Modal>
+          )}
           <ul className={s.ImageGallery}>
             {images.map(({ id, webformatURL, tags, largeImageURL }) => (
               <ImageGalleryItem
                 key={id}
                 id={id}
                 src={webformatURL}
+                url={largeImageURL}
                 alt={tags}
+                openModal={this.handleImgClick}
               />
             ))}
           </ul>
