@@ -1,1 +1,1 @@
-- [Завдання 2 - Пошук зображень](https://github.com/goitacademy/react-homework/tree/master/homework-03/image-finder)
+- [Задание - Поиск изображений](https://github.com/goitacademy/react-homework/tree/master/homework-03/image-finder)
