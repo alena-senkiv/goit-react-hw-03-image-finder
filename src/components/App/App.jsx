@@ -9,6 +9,7 @@ import { Loader } from 'components/Loader';
 import { ErrorSearch } from 'components/ErrorSearch';
 import { Modal } from 'components/Modal';
 
+const PER_PAGE = 12;
 const Status = {
   IDLE: 'idle',
   PENDING: 'pending',
@@ -21,6 +22,7 @@ export default class App extends Component {
     status: Status.IDLE,
     searchQuery: '',
     images: [],
+    totalPages: 0,
     page: 1,
     error: null,
     showModal: false,
@@ -40,14 +42,17 @@ export default class App extends Component {
 
   fetchImages = query => {
     const { page } = this.state;
-    fetchImg(query, page)
-      .then(({ hits }) => {
+    fetchImg(query, page, PER_PAGE)
+      .then(({ hits, total }) => {
+        const totalPages = Math.ceil(total / PER_PAGE);
+
         if (hits.length === 0) {
           return Promise.reject(new Error('Oops! Nothing found'));
         }
 
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
+          totalPages,
           status: Status.RESOLVED,
         }));
       })
@@ -58,9 +63,9 @@ export default class App extends Component {
     this.setState({ page: 1, images: [] });
   };
 
-  handleLoadMoreBtnClick = () => {
+  handleLoadMoreBtnClick = async () => {
     const query = this.state.searchQuery;
-    this.incrementPage();
+    await this.incrementPage();
     this.fetchImages(query);
     this.scrollDown();
   };
@@ -98,6 +103,8 @@ export default class App extends Component {
       images,
       error,
       showModal,
+      page,
+      totalPages,
       modalImgProps: { url, alt },
     } = this.state;
 
@@ -113,7 +120,9 @@ export default class App extends Component {
               <Modal onClose={this.toggleModal} url={url} alt={alt} />
             )}
             <ImageGallery images={images} openModal={this.handleImgClick} />
-            <LoadMoreBtn handleLoadMore={this.handleLoadMoreBtnClick} />
+            {totalPages !== page && (
+              <LoadMoreBtn handleLoadMore={this.handleLoadMoreBtnClick} />
+            )}
           </>
         )}
 
