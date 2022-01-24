@@ -22,7 +22,7 @@ export default class App extends Component {
     status: Status.IDLE,
     searchQuery: '',
     images: [],
-    totalPages: 0,
+    totalHits: 0,
     page: 1,
     error: null,
     showModal: false,
@@ -43,16 +43,14 @@ export default class App extends Component {
   fetchImages = query => {
     const { page } = this.state;
     fetchImg(query, page, PER_PAGE)
-      .then(({ hits, total }) => {
-        const totalPages = Math.ceil(total / PER_PAGE);
-
+      .then(({ hits, totalHits }) => {
         if (hits.length === 0) {
           return Promise.reject(new Error('Oops! Nothing found'));
         }
 
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
-          totalPages,
+          totalHits,
           status: Status.RESOLVED,
         }));
       })
@@ -104,9 +102,11 @@ export default class App extends Component {
       error,
       showModal,
       page,
-      totalPages,
+      totalHits,
       modalImgProps: { url, alt },
     } = this.state;
+
+    const totalPages = Math.ceil(totalHits / PER_PAGE);
 
     return (
       <>
