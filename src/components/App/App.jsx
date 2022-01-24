@@ -34,7 +34,7 @@ export default class App extends Component {
     const nextQuery = this.state.searchQuery;
 
     if (prevQuery !== nextQuery) {
-      this.reset();
+      await this.reset();
       this.setState({ status: Status.PENDING });
       await this.fetchImages(nextQuery);
     }
@@ -83,7 +83,7 @@ export default class App extends Component {
   };
 
   handleSearchFormSubmit = searchQuery => {
-    this.setState({ searchQuery, page: 1 });
+    this.setState({ searchQuery });
   };
 
   toggleModal = () => {
